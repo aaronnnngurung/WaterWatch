@@ -1,0 +1,31 @@
+# Python environment
+venv/
+.venv/
+
+# Secrets
+.env
+.env.*
+
+# Allow example environment file
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# Certificates and private keys
+*.pem
+*.key
+*.crt
+
+# Local editor settings
+.vscode/
