@@ -39,12 +39,17 @@ class SyncManager:
             node_id: initial_backoff
             for node_id in mqtt_clients
         }
+        self.retry_after = {node_id: 0.0 for node_id in mqtt_clients}
 
     def _connect_node(self, node_id, client):
         """Connect a node using exponential retry backoff."""
 
         if client.connected.is_set():
             return True
+
+        now = time.monotonic()
+        if now < self.retry_after[node_id]:
+            return False
 
         delay = self.retry_delays[node_id]
 
@@ -68,11 +73,12 @@ class SyncManager:
             delay * 2,
             self.maximum_backoff
         )
+        self.retry_after[node_id] = time.monotonic() + delay
 
         logger.warning(
-            "NODE OFFLINE | node=%s | retry in %s seconds",
+            "NODE OFFLINE | node=%s | next retry in %s seconds",
             node_id,
-            self.retry_delays[node_id]
+            delay
         )
 
         return False

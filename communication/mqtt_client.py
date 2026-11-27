@@ -153,8 +153,9 @@ class WaterWatchMQTT:
         if not self.connected.wait(timeout):
             if self.connection_failed.is_set():
                 logger.error(
-                    "MQTT AUTHENTICATION/CONNECTION FAILURE | node=%s",
-                    self.node_name
+                    "MQTT BROKER REJECTED CONNECTION | node=%s | reason=%s",
+                    self.node_name,
+                    self.last_error
                 )
             else:
                 logger.error(
@@ -223,6 +224,26 @@ class WaterWatchMQTT:
                     self.node_name
                 )
                 return False
+
+            # QoS 1 packet delivery is necessary but not sufficient: check
+            # the broker's PUBACK reason code to detect rejected telemetry.
+            if result.rc != mqtt.MQTT_ERR_SUCCESS:
+                logger.error(
+                    "MQTT DELIVERY REJECTED | node=%s | rc=%s",
+                    self.node_name,
+                    result.rc
+                )
+                return False
+
+            if hasattr(result, "puback_reason_code"):
+                reason_code = result.puback_reason_code
+                if reason_code is not None and reason_code.is_failure:
+                    logger.error(
+                        "MQTT DELIVERY REJECTED | node=%s | reason=%s",
+                        self.node_name,
+                        reason_code
+                    )
+                    return False
 
             logger.info(
                 "MQTT DELIVERED | node=%s | timestamp=%s",

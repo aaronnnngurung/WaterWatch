@@ -26,16 +26,20 @@ def generate_reading(
         1.0 = peak contamination
     """
 
-    now = current_time or time.time()
+    now = time.time() if current_time is None else current_time
     intensity = max(0.0, min(1.0, event_intensity))
 
-    # Normal baseline sensor values.
+    # Draw a fresh baseline value for each sensor reading. During an event,
+    # the same intensity then shifts several parameters together, so the
+    # readings reflect one shared physical disturbance rather than unrelated
+    # random spikes.
     base_ph = random.uniform(6.8, 7.6)
     base_turbidity = random.uniform(2.0, 8.0)
     base_tds = random.uniform(120.0, 250.0)
     base_flow = random.uniform(8.0, 18.0)
 
-    # Turbidity rises sharply during silt/sewage intrusion.
+    # Turbidity rises sharply during silt/sewage intrusion. The peak range
+    # follows the assignment's 100–800 NTU event range.
     turbidity_peak = random.uniform(100.0, 800.0)
     turbidity = base_turbidity + (
         turbidity_peak - base_turbidity

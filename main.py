@@ -247,6 +247,8 @@ def main():
 
     # 4. Create the shared contamination event.
     contamination = ContaminationEvent(
+        # The demo's contamination phase lasts 40 seconds. Rise over the
+        # first half, then wash out gradually through outage and recovery.
         rise_seconds=20,
         washout_seconds=60
     )

@@ -114,7 +114,7 @@ def load_telemetry():
                    payload_json, synced
             FROM telemetry
             ORDER BY timestamp_ms DESC
-            LIMIT 3000
+            LIMIT 10000
         """).fetchall()
 
         records = []
@@ -300,7 +300,7 @@ def check_alarms(row):
         if ph < 6.5:
             alarms.append({
                 "Node": node,
-                "Alarm": "Low pH",
+                "Alarm": "pH Out of Range",
                 "Severity": "CRITICAL",
                 "Reading": f"{ph:.2f}",
                 "Condition": "pH below 6.5"
@@ -309,12 +309,14 @@ def check_alarms(row):
         elif ph > 8.5:
             alarms.append({
                 "Node": node,
-                "Alarm": "High pH",
+                "Alarm": "pH Out of Range",
                 "Severity": "CRITICAL",
                 "Reading": f"{ph:.2f}",
                 "Condition": "pH above 8.5"
             })
 
+    # Match the assignment's create thresholds. Alarm clearing with
+    # hysteresis is handled by ThingsBoard's alarm rules, not this snapshot.
     if pd.notna(turbidity):
         if turbidity > 200:
             alarms.append({
@@ -325,7 +327,7 @@ def check_alarms(row):
                 "Condition": "Turbidity above 200 NTU"
             })
 
-        elif turbidity > 50:
+        if turbidity > 50:
             alarms.append({
                 "Node": node,
                 "Alarm": "High Turbidity",
@@ -346,7 +348,7 @@ def check_alarms(row):
     if pd.notna(flow) and flow == 0:
         alarms.append({
             "Node": node,
-            "Alarm": "Supply Interruption",
+                "Alarm": "Supply Interruption",
             "Severity": "MAJOR",
             "Reading": "0 L/min",
             "Condition": "No water flow detected"

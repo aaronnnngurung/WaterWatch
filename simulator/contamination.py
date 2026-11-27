@@ -27,7 +27,8 @@ class ContaminationEvent:
 
     def start(self, start_time=None):
         """Start the event."""
-        self.start_time = start_time or time.time()
+        # Check explicitly for None so a valid timestamp of 0 is preserved.
+        self.start_time = time.time() if start_time is None else start_time
         self.active = True
 
     def stop(self):
@@ -40,7 +41,7 @@ class ContaminationEvent:
         if not self.active or self.start_time is None:
             return 0.0
 
-        now = current_time or time.time()
+        now = time.time() if current_time is None else current_time
         elapsed = max(0.0, now - self.start_time)
 
         if elapsed <= self.rise_seconds:
